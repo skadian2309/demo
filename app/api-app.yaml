@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backstage
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+  sources:
+    - repoURL: https://backstage.github.io/charts
+      chart: backstage
+      targetRevision: 1.6.0
+      helm:
+        releaseName: backstage
+        parameters:
+          - name: backstage.image.tag
+            value: latest
+            forceString: true
+        valueFiles:
+          - $values/backstage/demo/values.yaml
+    - repoURL: https://github.com/tw-backstage-accelerator/di-platform-apps
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
